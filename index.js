@@ -14,7 +14,8 @@ const defaultModes = {
   'cordova-serve-browser': 'development',
   'cordova-build-browser': 'production',
   'cordova-serve-osx': 'development',
-  'cordova-build-osx': 'production'
+  'cordova-build-osx': 'production',
+  'cordova-run-android': 'production',
 }
 
 module.exports = (api, options) => {
@@ -298,6 +299,23 @@ module.exports = (api, options) => {
   })
   api.registerCommand('cordova-build-browser', async args => {
     return await runBuild('browser', args)
+  })
+
+  const run = async (platform, args) => {
+    // add cordova.js, define process.env.CORDOVA_PLATFORM
+    chainWebPack(platform)
+    // set build output folder
+    args.dest = cordovaPath + '/www'
+    // build
+    await api.service.run('build', args)
+    // cordova clean
+    await cordovaClean()
+    // cordova run
+    await cordovaRun(platform)
+  }
+  
+  api.registerCommand('cordova-run-android', async args => {
+    return await run('android', args)
   })
 }
 
